@@ -16,7 +16,7 @@ REFRESH_TOKEN_EXPIRY = 2
 
 auth_router = APIRouter()
 user_service = UserService()
-role_checker = RoleChecker(['admin'])
+role_checker = RoleChecker(['admin','user'])
 
 
 @auth_router.post(
@@ -24,10 +24,7 @@ role_checker = RoleChecker(['admin'])
     response_model=UserModel,
     status_code=status.HTTP_201_CREATED
 )
-async def create_user_account(
-    user_data: UserCreateModel,
-    session: AsyncSession = Depends(get_session)
-):
+async def create_user_account(user_data: UserCreateModel,session: AsyncSession = Depends(get_session)):
     email = user_data.email
 
     user_exists = await user_service.user_exists(email, session)
@@ -98,7 +95,7 @@ async def get_new_access_token(token_details:dict = Depends(RefreshTokenBearer()
         status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid or expired refresh token"
     )
 
-@auth_router.get("/me")
+@auth_router.get("/me",response_model=UserModel)
 async def get_current_user(user = Depends(get_current_user),_: bool = Depends(role_checker)):
     return user
 
