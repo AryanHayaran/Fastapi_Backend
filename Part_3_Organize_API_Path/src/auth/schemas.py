@@ -22,7 +22,9 @@ class UserModel(BaseModel):
     password_hash: str = Field(exclude=True)
     created_at: datetime 
     updated_at: datetime
-    books: List[Book] 
+
+class UserBooksModel(UserModel):
+    books: List[Book]
 
 
 class UserLoginModel(BaseModel):
