@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
-from src.books.schemas import Book, BookUpdateModel
-from src.books.models import Book
+from .schemas import Book, BookUpdateModel,BookDetailModel
+from src.db.models import Book
 from typing import List
 from src.db.main import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from src.auth.dependencies import AccessTokenBearer, RoleChecker
 book_router = APIRouter()
 book_service = BookService()
 access_token_bearer = AccessTokenBearer()
-role_checker = Depends(RoleChecker(['admin']))
+role_checker = Depends(RoleChecker(['admin','user']))
 
 
 @book_router.get("/", response_model=List[Book], dependencies=[role_checker])
@@ -42,7 +42,7 @@ async def create_book(
     return new_book
 
 
-@book_router.get("/{book_uid}", dependencies=[role_checker])
+@book_router.get("/{book_uid}",response_model=BookDetailModel ,dependencies=[role_checker])
 async def get_book(
     book_uid: str, session: AsyncSession = Depends(get_session),
     token_details:dict=Depends(access_token_bearer)
@@ -55,7 +55,7 @@ async def get_book(
                             detail="Book not found")
 
 
-@book_router.patch("/{book_uid}", dependencies=[role_checker])
+@book_router.patch("/{book_uid}", response_model=Book, dependencies=[role_checker])
 async def update_book(
     book_uid: str,
     book_update_data: BookUpdateModel,
