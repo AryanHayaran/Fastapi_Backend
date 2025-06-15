@@ -7,7 +7,7 @@ from src.auth.routes import auth_router
 from src.reviews.routes import review_router
 from src.db.main import init_db
 from .errors import create_exception_handler, InvalidCredentials, TagAlreadyExists, BookNotFound, UserAlreadyExists, UserNotFound, InsufficientPermission, AccessTokenRequired, InvalidToken, RefreshTokenRequired, RevokedToken
-
+from .middleware import register_middleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,7 +38,6 @@ app.add_exception_handler(
 
 @app.exception_handler(500)
 async def internal_server_error(request, exc):
-
     return JSONResponse(
         content={
             "message": "Oops! Something went wrong.",
@@ -46,6 +45,9 @@ async def internal_server_error(request, exc):
         },
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
+
+register_middleware(app)
 
 app.include_router(book_router, prefix=f"/api/{version}/books",tags=["books"])
 app.include_router(auth_router, prefix=f"/api/{version}/auth",tags=["auth"])
