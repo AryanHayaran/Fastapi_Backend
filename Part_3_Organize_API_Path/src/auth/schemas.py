@@ -26,7 +26,7 @@ class UserModel(BaseModel):
 class UserBooksModel(UserModel):
     books: List[Book]
     reviews: List[ReviewModel]
-
+ 
 
 class UserLoginModel(BaseModel):
     email: str = Field(max_length=40)
