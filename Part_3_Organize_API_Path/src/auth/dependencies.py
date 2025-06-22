@@ -1,3 +1,4 @@
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from fastapi import Request, status,Depends
 from fastapi.security.http import HTTPAuthorizationCredentials
@@ -9,8 +10,14 @@ from src.db.main import get_session
 from .service import UserService
 from typing import List
 from src.db.models import User
-from src.errors import  InvalidToken, AccessTokenRequired,RefreshTokenRequired,InsufficientPermission
-
+from src.errors import (
+    BookNotFound,
+    InvalidToken,
+    RefreshTokenRequired,
+    AccessTokenRequired,
+    InsufficientPermission,
+    AccountNotVerified,
+)
 
 user_service = UserService()
 
@@ -71,6 +78,16 @@ class RoleChecker:
         self.allowed_roles = allowed_roles
 
     def  __call__(self ,current_user: User = Depends(get_current_user)):
+        if not current_user.is_verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "message": "Account Not Verified",
+                    "error_code": "account_not_verified",
+                    "resolution": "Please check your email for verification details"
+                }
+            )
+        
         if current_user.role in self.allowed_roles:
             return current_user
         raise InsufficientPermission()
